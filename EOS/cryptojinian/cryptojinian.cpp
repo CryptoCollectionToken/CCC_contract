@@ -19,28 +19,20 @@ void cryptojinian::update_frozen_time_limit( const name &owner, const uint32_t &
     frozencoins_t frozencoins(_self, _self.value);
     auto itr_p = _players.require_find(owner.value, "Player not found.") ;
     const auto &v_param = collection_combination_parameters(type);
-    for (auto i = 0; i < quantity; ++i) {
-        for (const auto &id : itr_p->coins) {
-            for(const auto& yy : v_param) {
-                for ( uint8_t xx = 0 ; xx < _coinvalues[yy].size(); ++xx ) {
-                    if (cd_check(id)) {
+    for (const auto &id : itr_p->coins) {
+        if (cd_check(id)) {
+            for (auto i = 0; i < quantity; ++i) {
+                for(const auto& yy : v_param) {
+                    for ( uint8_t xx = 0 ; xx < _coinvalues[yy].size(); ++xx ) {
                         const auto itr_coin = _coins.require_find(id, "The coin not found.");
-                        if (itr_coin->type == toType(xx, yy))
-                            frozencoins.emplace(_self, [&](auto &c) {
-                                c.id = id;
-                            // c.time_limit = now() + (frozen_days * 86400);
-                            });
-                        // if () {
-                        //    frozencoins.modify(itr, _self, [&](auto &c) {
-                        //        c.time_limit = now() + (frozen_days * 86400);
-                        //    });
-                        // }
-                        break;
+                        if (itr_coin->type == toType(xx, yy)) {
+                            frozencoins.emplace(_self, [&](auto &c) { c.id = id; });
+                        }
                     }
                 }
             }
         }
-   }
+    }
 }
 /*
 void cryptojinian::update_frozen_time_limit( const name &owner, const uint32_t &type, const uint32_t &frozen_days )
