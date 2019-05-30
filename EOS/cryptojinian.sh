@@ -1,8 +1,8 @@
 cleos wallet unlock -n www --password PW5JDQJvz73w73eNEtthCRhLn9gieFki5uiZu1JZdjwMftVA3f4cG
 
-cleos -u http://api-direct.eosasia.one set contract chainbankeos cryptojinian -p chainbankeos@active
+cleos -u http://api.eosbeijing.one set contract chainbankeos cryptojinian -p chainbankeos@active
 
-cleos -u http://api.eosbeijing.one push action chainbankeos test '[]' -p chainbankeos@active
+cleos -u http://api-direct.eosasia.one push action chainbankeos test '[]' -p chainbankeos@active
 
 
 
@@ -21,6 +21,9 @@ cleos -u https://api-kylin.eosasia.one push action ccctest22222 pushorder '["ccc
 #cleos -u https://api-kylin.eosasia.one get table ccctest22222 ccctest22222 dividend
 #cleos -u https://api-kylin.eosasia.one get table ccctest22222 ccctest22222 order
 #cleos -u https://api-kylin.eosasia.one get table ccctest22222 ccctest22222 coin
+#cleos -u http://api.eosbeijing.one get table chainbankeos chainbankeos frozencoins
+cleos -u http://api.eosbeijing.one get table chainbankeos chainbankeos coin
+cleos -u http://api.eosbeijing.one get table chainbankeos chainbankeos player
 
 
 cleos get table contract contract accounts

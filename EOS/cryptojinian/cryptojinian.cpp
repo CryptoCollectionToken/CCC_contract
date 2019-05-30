@@ -26,7 +26,9 @@ void cryptojinian::update_frozen_time_limit( const name &owner, const uint32_t &
                     for ( uint8_t xx = 0 ; xx < _coinvalues[yy].size(); ++xx ) {
                         const auto itr_coin = _coins.require_find(id, "The coin not found.");
                         if (itr_coin->type == toType(xx, yy)) {
-                            frozencoins.emplace(_self, [&](auto &c) { c.id = id; });
+                            auto n = frozencoins.find(id);
+                            if ( n == frozencoins.end() )
+                                frozencoins.emplace(_self, [&](auto &c) { c.id = id; });
                         }
                     }
                 }

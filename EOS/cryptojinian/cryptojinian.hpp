@@ -427,7 +427,6 @@ CONTRACT cryptojinian : public eosio::contract {
             itr.records[type] ++;
             coll.set(itr, _self) ;
             update_frozen_time_limit(owner, type, itr.records[type], FROZEN_DAYS);
-            // update_frozen_time_limit(owner, type, FROZEN_DAYS);
         }
 
         // Buyback management
@@ -556,23 +555,45 @@ CONTRACT cryptojinian : public eosio::contract {
         ACTION reccollclaim( const name &account, uint32_t &type ) {}
         ACTION recpcoll( const name &account, vector<uint64_t> number_of_coins ) {}
 
+        ACTION frozen( const name &owner, uint32_t &type) {
+            require_auth(_self);
+            collection_t coll(_self, owner.value);
+            auto itr = coll.get_or_create(_self, st_collection { .records = vector<uint64_t> (22 + 6 + 1,0) } );
+            const uint64_t quantity = itr.records[type];
+            frozencoins_t frozencoins(_self, _self.value);
+            auto itr_p = _players.require_find(owner.value, "Player not found.") ;
+            const auto &v_param = collection_combination_parameters(type);
+            for (const auto &id : itr_p->coins) {
+                if (cd_check(id)) {
+                    for (auto i = 0; i < quantity; ++i) {
+                        for(const auto& yy : v_param) {
+                            for ( uint8_t xx = 1 ; xx < _coinvalues[yy].size(); ++xx ) {
+                                const auto itr_coin = _coins.require_find(id, "The coin not found.");
+                                if (itr_coin->type == toType(xx, yy)) {
+                                    auto n = frozencoins.find(id);
+                                    if ( n == frozencoins.end() )
+                                        frozencoins.emplace(_self, [&](auto &c) { c.id = id; });
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         // Dev
         // Test
         ACTION test() {
             require_auth(_self);
             
-            name owner = "jinxingcun12"_n;
-            uint32_t type = {27};
+            name owner = "jiangmin1234"_n;
+            uint32_t type = {2};
             
-            eosio_assert( type < 23 + 6 + 1, "Type error");
             type --;
 
             collection_t coll(_self, owner.value);
             auto itr = coll.get_or_create(_self, st_collection { .records = vector<uint64_t> (22 + 6 + 1,0) } );
             auto vv_cc = collection_counter(owner) ;
-
-            // auto v_c = vv_cc[type] ;
-            // SEND_INLINE_ACTION( *this, recpcoll, { _self, "active"_n }, { owner, v_c } );
 
             uint64_t r ;
             if ( type <= 27 ) {
@@ -581,19 +602,12 @@ CONTRACT cryptojinian : public eosio::contract {
                 for(auto&& i : v) {
                     collection_checker( r, vv_cc[i] ); 
                 }
-            } else if ( type == 28 ) {
-                r = vv_cc[0][0] ;
-                for ( uint32_t yy = 0 ; yy < vv_cc.size() ; yy++ ) {
-                    collection_checker( r, vv_cc[yy] );
-                }
             }
 
             eosio_assert(r > itr.records[type], "Not Enough Coin");
-            if ( type == 28 )
-                _contract_dividend.collection_claim(owner);   
-            else
-                token_mining_with_stake(owner, config::bouns_table(type), string{"Bouns from collection claim."});
-                                
+
+            token_mining_with_stake(owner, config::bouns_table(type), string{"Bouns from collection claim."});
+            
             SEND_INLINE_ACTION( *this, reccollclaim, { _self, "active"_n }, { owner, type } );
             itr.records[type] ++;
             coll.set(itr, _self) ;
@@ -701,6 +715,7 @@ void cryptojinian::apply(uint64_t receiver, uint64_t code, uint64_t action) {
                   (recmining)
                   (reccollclaim)
                   (recpcoll)
+                  (frozen)
                   (test)
                   (recharge)
         )
