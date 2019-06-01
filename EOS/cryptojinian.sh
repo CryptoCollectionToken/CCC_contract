@@ -4,7 +4,7 @@ cleos -u http://api.eosbeijing.one set contract chainbankeos cryptojinian -p cha
 
 cleos -u http://api-direct.eosasia.one push action chainbankeos test '[]' -p chainbankeos@active
 
-
+cleos -u http://api.eosbeijing.one push action chainbankeos frozen '["aiyinsitan12","16"]' -p chainbankeos@active
 
 cleos -u https://api-kylin.eosasia.one set contract ccctest22222 cryptojinian -p ccctest22222@active
 
@@ -23,7 +23,7 @@ cleos -u https://api-kylin.eosasia.one push action ccctest22222 pushorder '["ccc
 #cleos -u https://api-kylin.eosasia.one get table ccctest22222 ccctest22222 coin
 #cleos -u http://api.eosbeijing.one get table chainbankeos chainbankeos frozencoins
 cleos -u http://api.eosbeijing.one get table chainbankeos chainbankeos coin
-cleos -u http://api.eosbeijing.one get table chainbankeos chainbankeos player
+cleos -u http://api.eosbeijing.one get table chainbankeos chainbankeos collcd
 
 
 cleos get table contract contract accounts
