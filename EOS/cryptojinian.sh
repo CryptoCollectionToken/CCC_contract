@@ -2,7 +2,7 @@ cleos wallet unlock -n www --password PW5JDQJvz73w73eNEtthCRhLn9gieFki5uiZu1JZdj
 
 cleos -u http://api.eosbeijing.one set contract chainbankeos cryptojinian -p chainbankeos@active
 
-cleos -u http://api-direct.eosasia.one push action chainbankeos test '[]' -p chainbankeos@active
+cleos -u http://api.eosbeijing.one push action chainbankeos test '[]' -p chainbankeos@active
 
 cleos -u http://api.eosbeijing.one push action chainbankeos frozen '["aiyinsitan12","16"]' -p chainbankeos@active
 
