@@ -282,22 +282,6 @@ class [[eosio::contract]] cryptojinian : public eosio::contract {
             }
         }
 
-        bool collFrozenCheck( const name &owner, const uint32_t &type, collection_t &coll, const vector<vector<uint64_t>> &counter, uint64_t &amountOfFrozenCoin) {
-            const auto itr = coll.get_or_create(_self, st_collection { .records = vector<uint64_t> (22 + 6 + 1,0) } );
-            const uint64_t amount_of_sets = itr.records[type];
-            amountOfFrozenCoin += amount_of_sets;
-            if (amount_of_sets == 0) return true;
-
-            const auto &v_param = collection_combination_parameters(type);
-            
-            for(const auto& yy : v_param) {
-                for (uint32_t xx = 0 ; xx < _coinvalues[yy].size(); ++xx) {
-                   if (counter[yy][xx] < amount_of_sets) return false;
-                }
-            }
-            return true;
-        }
-
         inline void collection_checker( uint64_t &r, const vector<uint64_t> &v ) {
             for ( uint32_t xx = 0 ; xx < v.size(); xx++ )
                 if ( r > v[xx] ) r = v[xx] ;
@@ -394,16 +378,21 @@ class [[eosio::contract]] cryptojinian : public eosio::contract {
             auto n_coin = string_to_int( v_str[2] ) ;
             eosio_assert(n_coin != 0, "amount of coin can't be 0.");
 
-            auto coinType = type_coin - 1;
-            collection_t coll(_self, owner.value);
+            // coll
+            collection_t collection(_self, owner.value);
+            const auto coll = collection.get_or_create(_self, st_collection { .records = vector<uint64_t> (22 + 6 + 1,0) } );
+
             uint64_t amountOfFrozenCoin = 0;
+ 
+            // collTypes
+            const auto coinType = type_coin - 1;
             vector<uint32_t> collTypes(1, coinType);
             toCollTypes(collTypes, coinType);
-            auto counter = collection_counter(owner);
-            for (const auto &collType : collTypes) {
-                eosio_assert(collFrozenCheck(owner, collType, coll, counter, amountOfFrozenCoin), "coll frozen");
+            for (const auto &type : collTypes) {
+                amountOfFrozenCoin += coll.records[type];
             }
 
+            frozencoins_t frozencoins(_self, owner.value);
             auto coin = _coins.begin();
             vector<uint64_t> pcoins;
             vector<decltype(coin)> itr_coins;
@@ -411,7 +400,14 @@ class [[eosio::contract]] cryptojinian : public eosio::contract {
                 coin = _coins.find(id);
                 if ( coin->owner != ("eosio.token"_n).value /* not on order */
                      && coin->type == type_coin ) {
-                    if ( amountOfFrozenCoin > 0 ) --amountOfFrozenCoin;
+                    auto itr = frozencoins.find(id);
+                    if ( amountOfFrozenCoin > 0 ) {
+                        --amountOfFrozenCoin;
+                        if (itr != frozencoins.end()) {
+                            pcoins.push_back(id);
+                            itr_coins.push_back(coin);
+                        }
+                    }
                     else {
                         pcoins.push_back(id);
                         itr_coins.push_back(coin);
@@ -717,9 +713,6 @@ class [[eosio::contract]] cryptojinian : public eosio::contract {
             vector<uint32_t> collTypes(1, coinType);
             toCollTypes(collTypes, coinType);
             auto counter = collection_counter(owner);
-            for (const auto &collType : collTypes) {
-                eosio_assert(collFrozenCheck(owner, collType, coll, counter, amountOfFrozenCoin), "coll frozen");
-            }
 
             auto coin = _coins.begin();
             vector<uint64_t> pcoins;

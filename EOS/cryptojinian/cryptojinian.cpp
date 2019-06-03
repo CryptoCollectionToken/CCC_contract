@@ -62,10 +62,15 @@ void cryptojinian::setcoin(const name &owner, const uint64_t &type, const uint64
 
 void cryptojinian::unfreezecoin(const uint64_t &id){
     require_auth(_self);
-    frozencoins_t frozencoins(_self, _self.value);
+    frozencoins_t frozencoins(_self, _self.value);    
     auto itr = frozencoins.find(id);
-    eosio_assert(itr != frozencoins.end(), "no frozen coin"); // 必須有找到
-    frozencoins.erase(itr) ;
+    if (itr != frozencoins.end()) frozencoins.erase(itr);
+
+    auto coin = _coins.require_find(id, "Unable to find coin.");
+    frozencoins_t frozencoinsx(_self, coin->owner);
+    auto itr2 = frozencoinsx.find(id);
+    if (itr2 == frozencoinsx.end())
+        frozencoinsx.emplace(_self, [&](auto &c) { c.id = id; });
 }
 
 void cryptojinian::deletecoin(const uint64_t &id) {
