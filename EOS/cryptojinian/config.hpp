@@ -30,8 +30,8 @@ constexpr uint64_t PRICE_SCALE = 100000000;
 
 constexpr uint32_t MINING_TIMES = 16 ;
 
-constexpr double_t DIVIDEND_COEF{0.65} ;    // 分红调成65%
-constexpr double_t BUYBACK_COEF{0.2} ;      // 回购调成20%
+constexpr double_t DIVIDEND_COEF{0.60} ;    // 分红比例降低到60%
+constexpr double_t BUYBACK_COEF{0.25} ;      // 回购比例调整到25%
 constexpr double_t COLLECTION_COEF{0.15} ;  // 集齐整版纪念币奖励调成15%
 
 constexpr uint32_t FROZEN_DAYS = 30 ;
