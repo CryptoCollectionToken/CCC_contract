@@ -319,7 +319,7 @@ inline const asset cryptojinian::fee_processing(asset &quantity) {
 // make log
 // del order
 void cryptojinian::takeorder(const name &buyer, const uint64_t &order_id, asset &eos ) {
-    order_t _orders( get_self(), get_self().value );
+    order_t _orders( _self, _self.value );
 
     // check trade id & paid EOS
     auto itr_order = _orders.require_find(order_id, "Trade id is not found" );
@@ -341,7 +341,7 @@ void cryptojinian::takeorder(const name &buyer, const uint64_t &order_id, asset 
                 uint64_t inputtype = onecoin->type % 100;
                 uint64_t inputvalue = onecoin->type / 100;
                 uint64_t amount = _coinvalues[inputtype-1][inputvalue] / _coinvalues[inputtype-1][0];
-                token_unstake_and_burn(seller, asset( amount * 10 * 10000, config::TOKEN_SYMBOL ), string{""});
+                token_unstake_and_burn(seller, asset( amount * 32 * 10000, config::TOKEN_SYMBOL ), string{""});
                 break;
             }
         }
