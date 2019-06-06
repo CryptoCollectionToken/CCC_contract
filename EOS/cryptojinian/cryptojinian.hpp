@@ -210,76 +210,78 @@ class [[eosio::contract]] cryptojinian : public eosio::contract {
             return counter;
         }
 
-        inline void toCollTypes(vector<uint32_t> &collTypes, const uint32_t &type_coin) {
-            const uint32_t type = type_coin % 100;
+        inline auto toCollTypes(const uint32_t &typeofcoin) {
+            const uint32_t type = (typeofcoin % 100) -1;
+            vector<uint32_t> collTypes(1, type);
             switch( type ) {
                 case 0 :
                     collTypes.push_back(22);
-                    return ;
+                    break;
                 case 1 :
                     collTypes.push_back(23);
-                    return ;
+                    break;
                 case 2 :
                     collTypes.push_back(22);
-                    return ;
+                    break;
                 case 3 :
                     collTypes.push_back(24);
-                    return ;
+                    break;
                 case 4 :
                     collTypes.push_back(27);
-                    return ;
+                    break;
                 case 5 :
                     collTypes.push_back(25);
-                    return ;
+                    break;
                 case 6 :
                     collTypes.push_back(23);
-                    return ;
+                    break;
                 case 7 :
                     collTypes.push_back(23);
-                    return ;
+                    break;
                 case 8 :
                     collTypes.push_back(26);
-                    return ;
+                    break;
                 case 9 :
                     collTypes.push_back(26);
-                    return ;
+                    break;
                 case 10 :
                     collTypes.push_back(22);
-                    return ;
+                    break;
                 case 11 :
                     collTypes.push_back(23);
-                    return ;
+                    break;
                 case 12 :
                     collTypes.push_back(23);
-                    return ;
+                    break;
                 case 13 :
                     collTypes.push_back(24);
-                    return ;
+                    break;
                 case 14 :
                     collTypes.push_back(23);
-                    return ;
+                    break;
                 case 15 :
                     collTypes.push_back(23);
-                    return ;
+                    break;
                 case 16 :
                     collTypes.push_back(24);
-                    return ;
+                    break;
                 case 17 :
                     collTypes.push_back(25);
-                    return ;
+                    break;
                 case 18 :
                     collTypes.push_back(23);
-                    return ;
+                    break;
                 case 19 :
                     collTypes.push_back(27);
-                    return ;
+                    break;
                 case 20 :
                     collTypes.push_back(25);
-                    return ;
+                    break;
                 case 21 :
                     collTypes.push_back(23);
-                    return ;
+                    break;
             }
+            return collTypes;
         }
 
         inline void collection_checker( uint64_t &r, const vector<uint64_t> &v ) {
@@ -385,10 +387,7 @@ class [[eosio::contract]] cryptojinian : public eosio::contract {
             uint64_t amountOfFrozenCoin = 0;
  
             // collTypes
-            const auto coinType = type_coin - 1;
-            vector<uint32_t> collTypes(1, coinType);
-            toCollTypes(collTypes, coinType);
-            for (const auto &type : collTypes) {
+            for (const auto &type : toCollTypes(type_coin)) {
                 amountOfFrozenCoin += coll.records[type];
             }
 
@@ -691,71 +690,13 @@ class [[eosio::contract]] cryptojinian : public eosio::contract {
         // Test
         ACTION test() {
             require_auth(_self);
+            /* ===== */
             auto owner = "aiyinsitan12"_n;
             auto eos = asset(int64_t(500000), EOS_SYMBOL);
-            string straddorder = "2 416 1";
-
-            // =====
-
-            auto player = join_game_processing(owner);
-
-            auto v_str = explode(straddorder, ' ');
-            eosio_assert(v_str.size() == 3, "Error memo");
-
-            uint32_t type_order = string_to_int( v_str[0] ) ;
-            auto type_coin = coin::str_to_coin_type( v_str[1] ) ;
-            auto n_coin = string_to_int( v_str[2] ) ;
-            eosio_assert(n_coin != 0, "amount of coin can't be 0.");
-
-            auto coinType = type_coin - 1;
-            collection_t coll(_self, owner.value);
-            uint64_t amountOfFrozenCoin = 0;
-            vector<uint32_t> collTypes(1, coinType);
-            toCollTypes(collTypes, coinType);
-            auto counter = collection_counter(owner);
-
-            auto coin = _coins.begin();
-            vector<uint64_t> pcoins;
-            vector<decltype(coin)> itr_coins;
-            for ( const auto &id : player->coins ) {
-                coin = _coins.find(id);
-                if ( coin->owner != ("eosio.token"_n).value /* not on order */
-                     && coin->type == type_coin ) {
-                    // if ( amountOfFrozenCoin > 0 ) --amountOfFrozenCoin;
-                    // else {
-                    pcoins.push_back(id);
-                    itr_coins.push_back(coin);
-                    //}
-
-                    if ( pcoins.size() == n_coin) break;
-                }
-            }
-
-            // transfer coin 所有权 to "eosio.token"_n
-            for (const auto &coin : itr_coins) {
-                _coins.modify(coin, _self, [&](auto &c) {
-                    c.owner = ("eosio.token"_n).value;
-                });
-            }
-
-            // add TRADE_FEE
-            eos.set_amount(eos.amount * (1 + TRADE_FEE));
-
-            // push order
-            order_t _orders(_self, _self.value);
-            uint64_t neworderid = type_order * 1000000;
-            auto getorder = _orders.find(neworderid);
-            while(getorder != _orders.end()){
-                neworderid ++;
-                getorder = _orders.find(neworderid);
-            }
-            _orders.emplace(_self, [&](auto &o) {
-                o.id = neworderid;
-                o.account = owner.value;
-                o.bid = eos;
-                o.the_coins_for_sell = pcoins; // set coins
-                o.timestamp = current_time();
-            });
+            string straddorder = "2 216 1";
+            /* ===== */
+           
+            /* ===== */
             eosio_assert(false, "testX");
         }
 
