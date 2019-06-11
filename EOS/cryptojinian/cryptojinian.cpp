@@ -6,13 +6,6 @@ bool cryptojinian::cd_check( const uint64_t &id )
    auto itr = frozencoins.find(id);
    return itr == frozencoins.end(); // now() > itr->time_limit;
 }
-/*
-bool cryptojinian::cd_check( const name &owner, const uint32_t &type )
-{
-   singleton_collcd_t collcd(_self, owner.value);
-   auto itr = collcd.get_or_create(_self, st_collection_cd { .time_limit = vector<uint32_t> (22 + 6 + 1, now()-1) } );
-   return now() > itr.time_limit[type];
-}*/
 
 void cryptojinian::update_frozen_time_limit( const name &owner, const uint32_t &type, const uint64_t &quantity, const uint32_t &frozen_days )
 {
@@ -168,9 +161,39 @@ void cryptojinian::exchange(const std::string inputstrs){
     uint64_t coincount = inputs.size();
     uint64_t type = 0;
     name coinowner;
+
+    auto itr = _coins.find(inputs[0]);
+    auto owner = itr->owner;
+    collection_t collection(_self, owner);
+    const auto coll = collection.get_or_create(_self, st_collection { .records = vector<uint64_t> (22 + 6 + 1,0) } );
+
+    int64_t amountOfFrozenCoin = 0;
+    for (const auto &type : toCollTypes(itr->type)) { // collTypes
+        amountOfFrozenCoin += coll.records[type];
+    }
+ 
+    frozencoins_t frozencoins(_self, owner);
+    auto coin = _coins.begin();
+    auto player = _players.find(owner);
+    for ( const auto &id : player->coins ) {
+        coin = _coins.find(id);
+        if ( coin->owner != ("eosio.token"_n).value /* not on order */
+             && coin->type == itr->type ) {
+            auto fitr = frozencoins.find(id);
+            if ( amountOfFrozenCoin > 0 ) {
+                --amountOfFrozenCoin;
+                if (fitr != frozencoins.end()) {
+                    //--amountOfFrozenCoin;
+                }
+            } else break;
+            
+        }
+    }
+    eosio_assert(amountOfFrozenCoin <= 0, "This coin cant exchange, it is frozen.");
+
+
     auto onecoin = _coins.begin();
     for(int i=0;i<inputs.size();i++){
-        eosio_assert(cd_check(inputs[i]), "This coin cant exchange, it is frozen.");
         onecoin = _coins.find(inputs[i]);
         require_auth(name(onecoin->owner));
         if (type == 0) {
@@ -197,7 +220,7 @@ void cryptojinian::exchange(const std::string inputstrs){
 
 void cryptojinian::exchangedown(const uint64_t inputid, const uint64_t goal){
     auto onecoin = _coins.begin();
-    eosio_assert(cd_check(inputid), "This coin cant exchange, it is frozen.");
+    // eosio_assert(cd_check(inputid), "This coin cant exchange, it is frozen.");
     onecoin = _coins.find(inputid);
     require_auth(name(onecoin->owner));
     uint64_t goaltype = goal % 100;

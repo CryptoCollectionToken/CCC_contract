@@ -134,9 +134,9 @@ void dividend::claim(name &owner, asset quantity) {
 }
 
 void dividend::collection_claim(const name &from) {
-    require_auth(get_self());
+   // require_auth(_self);
     auto g = _global.get();
-    int64_t raw_dividend = g.earnings_for_collection ;
+    int64_t raw_dividend = g.earnings_for_collection;
     asset delta( raw_dividend, config::EOS_SYMBOL);
 
     if ( delta.is_valid() && delta.amount > 0) { 
@@ -147,9 +147,9 @@ void dividend::collection_claim(const name &from) {
       ).send();
 
       g.earnings_for_collection = 0 ;
-      _global.set(g, get_self());       
-    }else{
-       eosio_assert(false, "Can't Send EOS.");
+      _global.set(g, _self);       
+    } else {
+      eosio_assert(false, "Can't Send EOS.");
    }
 }
 
