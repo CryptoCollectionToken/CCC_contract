@@ -29,26 +29,18 @@ void cryptojinian::update_frozen_time_limit( const name &owner, const uint32_t &
         }
     }
 }
-/*
-void cryptojinian::update_frozen_time_limit( const name &owner, const uint32_t &type, const uint32_t &frozen_days )
-{
-   singleton_collcd_t collcd(_self, owner.value);
-   auto itr = collcd.get_or_create(_self, st_collection_cd { .time_limit = vector<uint32_t> (22 + 6 + 1, now()-1) } );
-   itr.time_limit[type] = now() + (frozen_days * 86400);
-   collcd.set(itr,_self);
-}*/
 
 void cryptojinian::setcoin(const name &owner, const uint64_t &type, const uint64_t &number) {
     //two-way binding.
-    auto itr = _players.require_find( owner.value, "Unable to find player" );
-    auto itr_newcoin = _coins.emplace(get_self(), [&](auto &c) {
+    auto p = _players.require_find(owner.value, "Unable to find player");
+    auto itr_newcoin = _coins.emplace(_self, [&](auto &c) {
         c.id = _coins.available_primary_key();
         c.owner = owner.value;
         c.type = type;
         c.number = number;
     });
 
-    _players.modify(itr, get_self(), [&](auto &p) {
+    _players.modify(p, _self, [&](auto &p) {
         p.coins.push_back(itr_newcoin->id);
     });
 }
@@ -71,15 +63,9 @@ void cryptojinian::deletecoin(const uint64_t &id) {
     auto itr_player = _players.find(onecoin->owner);
 
     // 修改 coins 表
-    _coins.modify(onecoin, get_self(), [&](auto &onecoin) {
-        onecoin.owner = get_self().value;
+    _coins.modify(onecoin, _self, [&](auto &onecoin) {
+        onecoin.owner = _self.value;
     });
-
-    // 修改凍結表
-    frozencoins_t frozencoins(_self, _self.value);
-    auto c_itr = frozencoins.find(id);
-    if ( c_itr != frozencoins.end() ) // 有找到
-        frozencoins.erase(c_itr) ;
 
     // 修改 players 表
     for(std::size_t i3=0;i3<itr_player->coins.size();i3++){
@@ -94,16 +80,15 @@ void cryptojinian::deletecoin(const uint64_t &id) {
 }
 
 void cryptojinian::exchangecoin(const name &owner, const uint64_t &id) {
-    // require_auth(get_self());
     //two-way binding.
     auto onecoin = _coins.find(id);
-    auto itr = _players.require_find(owner.value, "Unable to find player");
+    auto p = _players.require_find(owner.value, "Unable to find player");
 
     _coins.modify(onecoin, _self, [&](auto &onecoin) {
         onecoin.owner = owner.value;
     });
 
-    _players.modify(itr, get_self(), [&](auto &p) {
+    _players.modify(p, _self, [&](auto &p) {
         p.coins.push_back(id);
     });
 }
@@ -154,97 +139,92 @@ void cryptojinian::newcoinbypos(const name owner, const uint64_t pos){
     setcoin(owner,type,globalcoincount);
 }
 
-void cryptojinian::exchange(const std::string inputstrs){
+void cryptojinian::exchange(const string &inputstrs){
     // input ids.
-    std::vector<uint64_t> inputs;
+    vector<uint64_t> inputs;
     SplitString(inputstrs, inputs, ",");
-    uint64_t coincount = inputs.size();
+    
+    // 檢查 input 的 coin 是不是同 type
+    const uint64_t coincount = inputs.size();
+    name owner;
     uint64_t type = 0;
-    name coinowner;
+    vector<decltype(_coins.begin())> itrsOfInputCoins;
+    for( int i = 0 ; i < inputs.size() ; ++i){
+        auto &&c = _coins.find(inputs[i]);
+        require_auth(name(c->owner));
+        if (type == 0) {
+            owner = name(c->owner);
+            type = c->type;
+        } else eosio_assert(c->type == type, "Not Equal Type");
 
-    auto itr = _coins.find(inputs[0]);
-    auto owner = itr->owner;
-    collection_t collection(_self, owner);
-    const auto coll = collection.get_or_create(_self, st_collection { .records = vector<uint64_t> (22 + 6 + 1,0) } );
-
-    int64_t amountOfFrozenCoin = 0;
-    for (const auto &type : toCollTypes(itr->type)) { // collTypes
-        amountOfFrozenCoin += coll.records[type];
+        itrsOfInputCoins.emplace_back(c);
     }
- 
-    frozencoins_t frozencoins(_self, owner);
+
+
+    // 凍結檢驗
+    collection_t collection(_self, owner.value);
+    const auto &coll = collection.get_or_create(_self, st_collection { .records = vector<uint64_t> (22 + 6 + 1,0) } );
+
+    uint64_t amountOfFrozenCoin = 0;
+    const auto &v = toCollTypes(type);
+    for (const auto &t : v) { // collTypes
+        amountOfFrozenCoin += coll.records[t];
+    }
+    int64_t needAmount = amountOfFrozenCoin + coincount;
+
+    frozencoins_t frozencoins(_self, owner.value);
     auto coin = _coins.begin();
-    auto player = _players.find(owner);
-    for ( const auto &id : player->coins ) {
+    const auto &p = _players.find(owner.value);
+    const auto eosContract = EOS_CONTRACT.value;
+    for ( const auto &id : p->coins ) {
         coin = _coins.find(id);
-        if ( coin->owner != ("eosio.token"_n).value /* not on order */
-             && coin->type == itr->type ) {
+        if ( coin->type == type && coin->owner != eosContract /* not on order */ ) {
             auto fitr = frozencoins.find(id);
-            if ( amountOfFrozenCoin > 0 ) {
-                --amountOfFrozenCoin;
-                if (fitr != frozencoins.end()) {
-                    //--amountOfFrozenCoin;
-                }
-            } else break;
-            
+            if ( needAmount > 0 ) {
+                --needAmount;
+                if (fitr != frozencoins.end()) --needAmount;
+            }
+            if ( needAmount <= 0 ) break;
         }
     }
-    eosio_assert(amountOfFrozenCoin <= 0, "This coin cant exchange, it is frozen.");
+    eosio_assert(needAmount <= 0, "This coin cant exchange, it is frozen.");
 
-
-    auto onecoin = _coins.begin();
-    for(int i=0;i<inputs.size();i++){
-        onecoin = _coins.find(inputs[i]);
-        require_auth(name(onecoin->owner));
-        if (type == 0) {
-            type = onecoin->type;
-            coinowner = name(onecoin->owner);
-        } else eosio_assert(type == onecoin->type, "Not Equal Type");  
-    }
-
-    uint64_t inputtype = type % 100;
-    uint64_t inputvalue = type / 100;
-    uint64_t coinvalue = _coinvalues[inputtype-1][inputvalue];
-    uint64_t newcointype = 0;
-    for(int i1=0 ; i1 < _coinvalues[inputtype-1].size() ; i1++){
-        if ((coincount * coinvalue == _coinvalues[inputtype-1][i1]) && (i1 > inputvalue)){
-            for(int i2=0;i2<inputs.size();i2++){
-                deletecoin(inputs[i2]);
-            }
-            newcointype = (i1 * 100) + inputtype;
-            uint64_t globalcoincount = addcoincount(newcointype);
-            setcoin(coinowner,newcointype,globalcoincount);
+    const uint64_t &inputtype = type % 100;
+    const uint64_t &inputvalue = type / 100;
+    const uint64_t &indexOfType = inputtype - 1;
+    const uint64_t &coinvalue = _coinvalues[indexOfType][inputvalue];
+    for(int i1=0 ; i1 < _coinvalues[indexOfType].size() ; i1++){
+        if ((coincount * coinvalue == _coinvalues[indexOfType][i1]) && (i1 > inputvalue)){
+            for(auto &i2 : inputs) { deletecoin(i2); }
+            uint64_t &&newcointype = (i1 * 100) + inputtype;
+            setcoin(name(owner), newcointype, addcoincount(newcointype));
         }
     }
 }
 
 void cryptojinian::exchangedown(const uint64_t inputid, const uint64_t goal){
-    auto onecoin = _coins.begin();
     // eosio_assert(cd_check(inputid), "This coin cant exchange, it is frozen.");
-    onecoin = _coins.find(inputid);
+    auto onecoin = _coins.find(inputid);
     require_auth(name(onecoin->owner));
-    uint64_t goaltype = goal % 100;
-    uint64_t goalvalue = goal / 100;
-    uint64_t inputtype = onecoin->type%100;
-    uint64_t inputvalue = onecoin->type/100;
+    const uint64_t &goaltype = goal % 100;
+    const uint64_t &goalvalue = goal / 100;
+    const uint64_t &inputtype = onecoin->type % 100;
+    const uint64_t &inputvalue = onecoin->type / 100;
     eosio_assert(inputtype == goaltype, "Not Equal Type");  
     eosio_assert(goalvalue < inputvalue, "Goal Is Gearter Than Input");
-    uint64_t amount = _coinvalues[inputtype-1][inputvalue]/_coinvalues[goaltype-1][goalvalue];
+    const uint64_t &amount = _coinvalues[inputtype-1][inputvalue] / _coinvalues[goaltype-1][goalvalue];
     eosio_assert(_coinvalues[inputtype-1][inputvalue]%_coinvalues[goaltype-1][goalvalue] == 0, "Cant't exactly divided.");
     for(int i1 = 0; i1 < amount; i1++){
         if(goalvalue == 0){
             for(int i2 = 0; i2 < _coins.available_primary_key(); i2++){
-                auto onecoin_finder = _coins.find(i2);
-                if(onecoin_finder == _coins.end()) continue;
-                if(onecoin_finder->owner != get_self().value) continue;
-                if(onecoin_finder->type != goal) continue;
-                exchangecoin(name(onecoin->owner),i2);
+                auto itr = _coins.find(i2);
+                if(itr == _coins.end()) continue;
+                if(itr->owner != _self.value) continue;
+                if(itr->type != goal) continue;
+                exchangecoin(name(onecoin->owner), i2);
                 break;
             }
-        }else{
-            uint64_t globalcoincount = addcoincount(goal);
-            setcoin(name(onecoin->owner),goal,globalcoincount);
-        }
+        } else setcoin(name(onecoin->owner), goal, addcoincount(goal));
     }
     deletecoin(inputid);
 }
@@ -354,7 +334,6 @@ void cryptojinian::takeorder(const name &buyer, const uint64_t &order_id, asset 
     auto itr_player = _players.find( seller.value );
     auto &v_pcoins = itr_player->coins;
     for (const auto &cid : itr_order->the_coins_for_sell){
-        // deletecoin(cid);
         for(std::size_t i=0;i<v_pcoins.size();++i){
             if( cid ==  v_pcoins[i] ){
                 _players.modify(itr_player, get_self(), [&](auto &p) {

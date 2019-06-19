@@ -213,75 +213,75 @@ class [[eosio::contract]] cryptojinian : public eosio::contract {
         }
 
         inline auto toCollTypes(const uint32_t &typeofcoin) {
-            const uint32_t type = (typeofcoin % 100) -1;
-            vector<uint32_t> collTypes(1, type);
-            collTypes.push_back(28);
+            const uint32_t &type = (typeofcoin % 100) -1;
+            vector<uint32_t> collTypes{1, type};
+            collTypes.emplace_back(28);
             switch( type ) {
                 case 0 :
-                    collTypes.push_back(22);
+                    collTypes.emplace_back(22);
                     break;
                 case 1 :
-                    collTypes.push_back(23);
+                    collTypes.emplace_back(23);
                     break;
                 case 2 :
-                    collTypes.push_back(22);
+                    collTypes.emplace_back(22);
                     break;
                 case 3 :
-                    collTypes.push_back(24);
+                    collTypes.emplace_back(24);
                     break;
                 case 4 :
-                    collTypes.push_back(27);
+                    collTypes.emplace_back(27);
                     break;
                 case 5 :
-                    collTypes.push_back(25);
+                    collTypes.emplace_back(25);
                     break;
                 case 6 :
-                    collTypes.push_back(23);
+                    collTypes.emplace_back(23);
                     break;
                 case 7 :
-                    collTypes.push_back(23);
+                    collTypes.emplace_back(23);
                     break;
                 case 8 :
-                    collTypes.push_back(26);
+                    collTypes.emplace_back(26);
                     break;
                 case 9 :
-                    collTypes.push_back(26);
+                    collTypes.emplace_back(26);
                     break;
                 case 10 :
-                    collTypes.push_back(22);
+                    collTypes.emplace_back(22);
                     break;
                 case 11 :
-                    collTypes.push_back(23);
+                    collTypes.emplace_back(23);
                     break;
                 case 12 :
-                    collTypes.push_back(23);
+                    collTypes.emplace_back(23);
                     break;
                 case 13 :
-                    collTypes.push_back(24);
+                    collTypes.emplace_back(24);
                     break;
                 case 14 :
-                    collTypes.push_back(23);
+                    collTypes.emplace_back(23);
                     break;
                 case 15 :
-                    collTypes.push_back(23);
+                    collTypes.emplace_back(23);
                     break;
                 case 16 :
-                    collTypes.push_back(24);
+                    collTypes.emplace_back(24);
                     break;
                 case 17 :
-                    collTypes.push_back(25);
+                    collTypes.emplace_back(25);
                     break;
                 case 18 :
-                    collTypes.push_back(23);
+                    collTypes.emplace_back(23);
                     break;
                 case 19 :
-                    collTypes.push_back(27);
+                    collTypes.emplace_back(27);
                     break;
                 case 20 :
-                    collTypes.push_back(25);
+                    collTypes.emplace_back(25);
                     break;
                 case 21 :
-                    collTypes.push_back(23);
+                    collTypes.emplace_back(23);
                     break;
             }
             return collTypes;
@@ -334,7 +334,7 @@ class [[eosio::contract]] cryptojinian : public eosio::contract {
             require_auth(_self);
             deletecoin(id);
         }
-        ACTION exchange(const std::string inputs);
+        ACTION exchange(const string &inputs);
         ACTION exchangedown(const uint64_t inputid, const uint64_t goal);
         ACTION unfreezecoin(const uint64_t &id); 
 
