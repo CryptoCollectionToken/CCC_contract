@@ -188,26 +188,28 @@ class [[eosio::contract]] cryptojinian : public eosio::contract {
         void token_mining_with_stake(name miner, asset quantity, string memo);
         inline const asset fee_processing( asset &quantity ) ;
 
-        auto collection_counter(const name &owner) {
+        void collection_counter(const name &owner, const uint32_t &yy, uint64_t &r) {
             auto player = _players.require_find(owner.value, "Player not found.");
             // type :xxyy, xx for valuetype, yy for cointype
             // BTC 1 cointype, ETH 2 cointype
             // for example: 2 valuetype BTC: 201
 
-            vector<vector<uint64_t>> counter(_coinvalues.size());
-            for ( uint32_t i = 0 ; i < counter.size() ; ++i ) {
-                counter[i] = vector<uint64_t>(_coinvalues[i].size(), 0);
+            vector<decltype(_coins.begin())> coins;
+            for ( const auto &cid : player->coins ) {
+                coins.push_back(_coins.find(cid));
             }
 
-            for ( const auto &cid : player->coins ) {
-                for ( uint32_t yy = 0 ; yy < counter.size() ; ++yy ) {
-                    for ( uint32_t xx = 0 ; xx < counter[yy].size(); ++xx ) {
-                        if ( _coins.find(cid)->type == toType(xx, yy) ) counter[yy][xx]++;
+            vector<vector<uint64_t>> counter(_coinvalues.size());
+            counter[yy] = vector<uint64_t>(_coinvalues[yy].size(), 0);
+            for ( uint32_t xx = 0 ; xx < counter[yy].size(); ++xx ) {
+                for ( const auto &itr : coins ) {
+                    if ( itr->type == toType(xx, yy) ) {
+                        counter[yy][xx]++;
                     }
                 }
+                if ( xx == 0 ) r = counter[yy][xx];
+                if ( r > counter[yy][xx] ) r = counter[yy][xx];
             }
-            
-            return counter;
         }
 
         inline auto toCollTypes(const uint32_t &typeofcoin) {
@@ -497,34 +499,29 @@ class [[eosio::contract]] cryptojinian : public eosio::contract {
 
             collection_t coll(_self, owner.value);
             auto itr = coll.get_or_create(_self, st_collection { .records = vector<uint64_t> (22 + 6 + 1,0) } );
-            auto vv_cc = collection_counter(owner) ;
-            
-            // auto v_c = vv_cc[type] ;
-            // SEND_INLINE_ACTION( *this, recpcoll, { _self, "active"_n }, { owner, v_c } );
-            
+
             uint64_t r ;
             if ( type <= 27 ) {
                 const auto &v = collection_combination_parameters(type);
-                r = vv_cc[v[0]][0]; 
-                for(auto&& i : v) {
-                    collection_checker( r, vv_cc[i] ); 
+                for(auto&& yy : v) {
+                    collection_counter(owner, yy, r);
                 }
             } else if ( type == 28 ) {
-                r = vv_cc[0][0] ;
-                for ( uint32_t yy = 0 ; yy < vv_cc.size() ; yy++ ) {
-                    collection_checker( r, vv_cc[yy] );
+                for (uint32_t i = 0 ; i < 22 ; ++i) {
+                    if ( i == 0 ) r = itr.records[i];
+                    if ( r > itr.records[i] ) r = itr.records[i];
                 }
             }
 
             eosio_assert(r > itr.records[type], "Not Enough Coin");
-            if ( type == 28 )
-                _contract_dividend.collection_claim(owner);   
-            else
+            if ( type != 28 )
                 token_mining_with_stake(owner, config::bouns_table(type), string{"Bouns from collection claim."});
-                                
+            else
+                _contract_dividend.collection_claim(owner); 
+            
             SEND_INLINE_ACTION( *this, reccollclaim, { _self, "active"_n }, { owner, type } );
             itr.records[type] ++;
-            coll.set(itr, _self) ;
+            coll.set(itr, _self);
         }
 
         // Buyback management
@@ -689,46 +686,43 @@ class [[eosio::contract]] cryptojinian : public eosio::contract {
         // Dev
         // Test
         ACTION test() {
-            require_auth(_self);
+            //require_auth(_self);
+            require_auth("megumimegumi"_n);
             /* ===== */
-            auto owner = "jiangmin1234"_n;
+            auto owner = "heiheihahaha"_n;
 
-            uint32_t type = 16;
+            uint32_t type = 29;
             /* ===== */
             
-            eosio_assert( type < 23 + 6 + 1, "Type error");
+            eosio_assert( type <= 22 + 6 + 1, "Type error");
             type --;
 
             collection_t coll(_self, owner.value);
             auto itr = coll.get_or_create(_self, st_collection { .records = vector<uint64_t> (22 + 6 + 1,0) } );
-            auto vv_cc = collection_counter(owner) ;
-            
-            // auto v_c = vv_cc[type] ;
-            // SEND_INLINE_ACTION( *this, recpcoll, { _self, "active"_n }, { owner, v_c } );
-            
+
             uint64_t r ;
             if ( type <= 27 ) {
                 const auto &v = collection_combination_parameters(type);
-                r = vv_cc[v[0]][0]; 
-                for(auto&& i : v) {
-                    collection_checker( r, vv_cc[i] ); 
+                for(auto&& yy : v) {
+                    collection_counter(owner, yy, r);
                 }
             } else if ( type == 28 ) {
-                r = vv_cc[0][0] ;
-                for ( uint32_t yy = 0 ; yy < vv_cc.size() ; yy++ ) {
-                    collection_checker( r, vv_cc[yy] );
+                for (uint32_t i = 0 ; i < 22 ; ++i) {
+                    if ( i == 0 ) r = itr.records[i];
+                    if ( r > itr.records[i] ) r = itr.records[i];
                 }
             }
 
             eosio_assert(r > itr.records[type], "Not Enough Coin");
-            if ( type == 28 )
-                _contract_dividend.collection_claim(owner);   
-            else
+            if ( type != 28 )
                 token_mining_with_stake(owner, config::bouns_table(type), string{"Bouns from collection claim."});
-                                
+            else
+                _contract_dividend.collection_claim(owner); 
+            
             SEND_INLINE_ACTION( *this, reccollclaim, { _self, "active"_n }, { owner, type } );
             itr.records[type] ++;
-            coll.set(itr, _self) ;
+            coll.set(itr, _self);
+            
             /* ===== */
             eosio_assert(false, "testX");
         }

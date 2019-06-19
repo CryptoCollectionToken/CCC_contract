@@ -3,7 +3,14 @@ cleos wallet unlock -n www --password PW5JDQJvz73w73eNEtthCRhLn9gieFki5uiZu1JZdj
 cleos -u http://api.eosbeijing.one set contract chainbankeos cryptojinian -p chainbankeos@active
 
 cleos -u http://api.eosbeijing.one push action chainbankeos test '[]' -p chainbankeos@active
+cleos -u https://api.eosnewyork.io push action chainbankeos test '[]' -p chainbankeos@active
+cleos -u http://api.eosbeijing.one push action chainbankeos test '[]' -p megumimegumi@active
+cleos -u https://api.eosnewyork.io push action chainbankeos test '[]' -p megumimegumi@active
+cleos -u http://peer1.eoshuobipool.com:8181 push action chainbankeos test '[]' -p megumimegumi@active
 
+cleos -u http://api.eosbeijing.one push action chainbankeos collclaim '["rukamoemoe51","29"]' -p rukamoemoe51@active
+
+http://peer1.eoshuobipool.com:8181/
 cleos -u http://api.eosbeijing.one push action chainbankeos frozen '["aiyinsitan12","16"]' -p chainbankeos@active
 
 cleos -u https://api-kylin.eosasia.one set contract ccctest22222 cryptojinian -p ccctest22222@active
