@@ -25,8 +25,7 @@ class [[eosio::contract]] cryptojinian : public eosio::contract {
         _contract_dividend(receiver, code, ds ),
         _global(receiver, receiver.value),
         _coins(receiver, receiver.value),
-        _players(receiver, receiver.value),
-        _usedcoins(receiver, receiver.value) {}
+        _players(receiver, receiver.value) {}
 
         TABLE accounts : kyubey::account {};
         TABLE stat : kyubey::currency_stats {};
@@ -64,7 +63,7 @@ class [[eosio::contract]] cryptojinian : public eosio::contract {
             EOSLIB_SERIALIZE(player, (playername)(seed)(coins)(sponsor)(refs) )
         };
 
-        TABLE coin {
+        struct [[eosio::table("coin")]] st_coin {
             uint64_t id;
             capi_name owner;
             uint64_t type; // type :xxyy, xx for valuetype, yy for cointype
@@ -77,9 +76,22 @@ class [[eosio::contract]] cryptojinian : public eosio::contract {
             }
 
             auto primary_key() const { return id; }
-            EOSLIB_SERIALIZE(coin, (id)(owner)(type)(number))
+            EOSLIB_SERIALIZE(st_coin, (id)(owner)(type)(number))
+        };
+
+        typedef vector<st_coin> v_coin_t;
+
+        struct [[eosio::table("coincoin")]] st_coincoin {
+            vector<v_coin_t> coins;
         };
         
+        /*
+            vector<st_coin> coins;
+         */
+        struct [[eosio::table("player2")]] st_player2 {
+            vector<st_coin> coins;
+        };
+
         struct [[eosio::table("frozencoins")]] st_frozen_coin {
             uint64_t id;
             uint32_t time_limit = 0;
@@ -88,9 +100,9 @@ class [[eosio::contract]] cryptojinian : public eosio::contract {
         };
 
         /*
-            // << 16 to fix usedspilt64;
-            // << 32 to fix usedspilt6400;
-            // << 48 to fix typecounts;
+            << 16 to fix usedspilt64;
+            << 32 to fix usedspilt6400;
+            << 48 to fix typecounts;
         */
         TABLE usedcoins {
             uint64_t key = 0;
@@ -123,31 +135,28 @@ class [[eosio::contract]] cryptojinian : public eosio::contract {
         struct [[eosio::table("collection")]] st_collection {
             vector<uint64_t> records ;
         };
-        
-        struct [[eosio::table("collcd")]] st_collection_cd {
-            vector<uint32_t> time_limit ;
-        };
 
-        struct [[eosio::table("buybackqueue")]]  st_buybackqueue {
+        struct [[eosio::table("buybackqueue")]] st_buybackqueue {
             asset limit ;
             asset price ;
         };
 
         typedef singleton<"global"_n, st_global> singleton_global_t;
         typedef eosio::multi_index<"player"_n, player> player_t;
-        typedef eosio::multi_index<"coin"_n, coin> coin_t;
+        // typedef singleton<"player2"_n, st_player2> singleton_player2_t;
+        typedef eosio::multi_index<"coin"_n, st_coin> coin_t;
+        typedef singleton<"coincoin"_n, st_coincoin> singleton_coincoin_t;
         typedef eosio::multi_index<"usedcoins"_n, usedcoins> usedcoins_t;
         typedef eosio::multi_index<"miningqueue"_n, st_miningqueue> miningqueue_t;
         typedef eosio::multi_index<"order"_n, order> order_t;
         typedef eosio::multi_index<"frozencoins"_n,  st_frozen_coin> frozencoins_t;
         typedef singleton<"collection"_n, st_collection> collection_t;
-        typedef singleton<"collcd"_n, st_collection_cd> singleton_collcd_t;
         typedef singleton<"buybackqueue"_n, st_buybackqueue> singleton_buybackqueue_t;
 
         singleton_global_t _global;
         player_t _players;
         coin_t _coins; 
-        usedcoins_t _usedcoins;
+
         kyubey _contract_kyubey ;
         dividend _contract_dividend;
 
@@ -379,7 +388,7 @@ class [[eosio::contract]] cryptojinian : public eosio::contract {
             eosio_assert(v_str.size() == 3, "Error memo");
 
             uint32_t type_order = string_to_int( v_str[0] ) ;
-            auto type_coin = coin::str_to_coin_type( v_str[1] ) ;
+            auto type_coin = st_coin::str_to_coin_type( v_str[1] ) ;
             auto n_coin = string_to_int( v_str[2] ) ;
             eosio_assert(n_coin != 0, "amount of coin can't be 0.");
 
@@ -498,7 +507,7 @@ class [[eosio::contract]] cryptojinian : public eosio::contract {
             type --;
 
             collection_t coll(_self, owner.value);
-            auto itr = coll.get_or_create(_self, st_collection { .records = vector<uint64_t> (22 + 6 + 1,0) } );
+            auto &&itr = coll.get_or_create(_self, st_collection { .records = vector<uint64_t> (22 + 6 + 1,0) });
 
             uint64_t r ;
             if ( type <= 27 ) {
@@ -683,46 +692,107 @@ class [[eosio::contract]] cryptojinian : public eosio::contract {
                 frozencoins.emplace(_self, [&](auto &c) { c.id = id; });
         }
 
+        [[eosio::action]] void coincoin(name n) {
+            require_auth(_self);
+            auto p = _players.find(n.value);
+
+            singleton_coincoin_t coincoin(_self, n.value);
+            if (coincoin.exists()) coincoin.remove();
+
+            st_coincoin cc{ .coins = vector<v_coin_t> (22) };
+            for (const auto &id : p->coins) {
+                auto coin = _coins.find(id);
+                cc.coins[(coin->type % 100) -1].push_back(*coin);
+            }
+            
+            coincoin.set(cc, _self);
+        }
+
         // Dev
         // Test
         ACTION test() {
             //require_auth(_self);
             require_auth("megumimegumi"_n);
             /* ===== */
-            auto owner = "heiheihahaha"_n;
-
-            uint32_t type = 29;
+            // input ids.
+            vector<uint64_t> inputs;
+            inputs.push_back(12451);
+            inputs.push_back(14330);
+            inputs.push_back(15247);
             /* ===== */
-            
-            eosio_assert( type <= 22 + 6 + 1, "Type error");
-            type --;
+                    
+            // 檢查 input 的 coin 是不是同 type
+            const uint64_t coincount = inputs.size();
+            name owner;
+            uint64_t type = 0;
+            vector<decltype(_coins.begin())> itrsOfInputCoins;
+            for( int i = 0 ; i < inputs.size() ; ++i){
+                auto &&c = _coins.find(inputs[i]);
+                // require_auth(name(c->owner));
+                if (type == 0) {
+                    owner = name(c->owner);
+                    type = c->type;
+                } else eosio_assert(c->type == type, "Not Equal Type");
 
-            collection_t coll(_self, owner.value);
-            auto itr = coll.get_or_create(_self, st_collection { .records = vector<uint64_t> (22 + 6 + 1,0) } );
-
-            uint64_t r ;
-            if ( type <= 27 ) {
-                const auto &v = collection_combination_parameters(type);
-                for(auto&& yy : v) {
-                    collection_counter(owner, yy, r);
-                }
-            } else if ( type == 28 ) {
-                for (uint32_t i = 0 ; i < 22 ; ++i) {
-                    if ( i == 0 ) r = itr.records[i];
-                    if ( r > itr.records[i] ) r = itr.records[i];
-                }
+                itrsOfInputCoins.emplace_back(c);
             }
 
-            eosio_assert(r > itr.records[type], "Not Enough Coin");
-            if ( type != 28 )
-                token_mining_with_stake(owner, config::bouns_table(type), string{"Bouns from collection claim."});
-            else
-                _contract_dividend.collection_claim(owner); 
-            
-            SEND_INLINE_ACTION( *this, reccollclaim, { _self, "active"_n }, { owner, type } );
-            itr.records[type] ++;
-            coll.set(itr, _self);
-            
+
+            // 凍結檢驗
+            collection_t collection(_self, owner.value);
+            const auto &coll = collection.get_or_create(_self, st_collection { .records = vector<uint64_t> (22 + 6 + 1,0) } );
+
+            uint64_t amountOfFrozenCoin = 0;
+            const auto &v = toCollTypes(type);
+            for (const auto &t : v) { // collTypes
+                amountOfFrozenCoin += coll.records[t];
+            }
+            int64_t needAmount = amountOfFrozenCoin + coincount;
+
+            singleton_coincoin_t coincoin(_self, owner.value);
+            frozencoins_t frozencoins(_self, owner.value);
+            const auto eosContract = EOS_CONTRACT.value;
+            if (coincoin.exists()) {
+                auto &&v = (coincoin.get().coins)[(type % 100) -1];
+                for ( const auto &coin : v ) {
+                    if ( coin.owner != eosContract /* not on order */ ) {
+                        auto fitr = frozencoins.find(coin.id);
+                        if ( needAmount > 0 ) {
+                            --needAmount;
+                            if (fitr != frozencoins.end()) --needAmount;
+                        }
+                        if ( needAmount <= 0 ) break;
+                    }
+                }
+            } else {
+                auto coin = _coins.begin();
+                for ( const auto &id : _players.find(owner.value)->coins ) {
+                    coin = _coins.find(id);
+                    if ( coin->type == type && coin->owner != eosContract /* not on order */ ) {
+                        auto fitr = frozencoins.find(id);
+                        if ( needAmount > 0 ) {
+                            --needAmount;
+                            if (fitr != frozencoins.end()) --needAmount;
+                        }
+                        if ( needAmount <= 0 ) break;
+                    }
+                }
+            }
+            eosio_assert(needAmount <= 0, "This coin cant exchange, it is frozen.");
+            coincoin.remove();
+
+            const uint64_t &inputtype = type % 100;
+            const uint64_t &inputvalue = type / 100;
+            const uint64_t &indexOfType = inputtype - 1;
+            const uint64_t &coinvalue = _coinvalues[indexOfType][inputvalue];
+            for(int i1=0 ; i1 < _coinvalues[indexOfType].size() ; i1++){
+                if ((coincount * coinvalue == _coinvalues[indexOfType][i1]) && (i1 > inputvalue)){
+                    for(auto &i2 : inputs) { deletecoin(i2); }
+                    uint64_t &&newcointype = (i1 * 100) + inputtype;
+                    setcoin(name(owner), newcointype, addcoincount(newcointype));
+                }
+            }
+                    
             /* ===== */
             eosio_assert(false, "testX");
         }
@@ -761,6 +831,14 @@ void cryptojinian::init() {
 
 void cryptojinian::clear() {
     require_auth(_self);
+
+    auto it = _players.begin();
+    while (it != _players.end()) {
+        // auto &&table = singleton_collcd_t(_self, it->playername);
+        // if ( table.exists() ) table.remove();
+        ++it;
+    }
+
     // auto itr = _players.begin();
     // while (itr != _players.end()) {
     //     _players.erase(itr);
@@ -788,6 +866,7 @@ void cryptojinian::clear() {
     // }
 
 }
+
 
 void cryptojinian::apply(uint64_t receiver, uint64_t code, uint64_t action) {
     auto &thiscontract = *this;
@@ -828,6 +907,7 @@ void cryptojinian::apply(uint64_t receiver, uint64_t code, uint64_t action) {
                   (recpcoll)
                   (frozen)
                   (frozencoin)
+                  (coincoin)
                   (test)
                   (recharge)
         )

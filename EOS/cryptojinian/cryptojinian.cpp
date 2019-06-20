@@ -94,6 +94,7 @@ void cryptojinian::exchangecoin(const name &owner, const uint64_t &id) {
 }
 
 uint64_t cryptojinian::addcoincount( uint64_t type ){
+    usedcoins_t _usedcoins(_self, _self.value);
     auto usedcoins = _usedcoins.find( type );
     uint64_t globalcoincount = 0 ;
     globalcoincount ++;
@@ -172,22 +173,37 @@ void cryptojinian::exchange(const string &inputstrs){
     }
     int64_t needAmount = amountOfFrozenCoin + coincount;
 
+    singleton_coincoin_t coincoin(_self, owner.value);
     frozencoins_t frozencoins(_self, owner.value);
-    auto coin = _coins.begin();
-    const auto &p = _players.find(owner.value);
     const auto eosContract = EOS_CONTRACT.value;
-    for ( const auto &id : p->coins ) {
-        coin = _coins.find(id);
-        if ( coin->type == type && coin->owner != eosContract /* not on order */ ) {
-            auto fitr = frozencoins.find(id);
-            if ( needAmount > 0 ) {
-                --needAmount;
-                if (fitr != frozencoins.end()) --needAmount;
+    if (coincoin.exists()) {
+        auto &&v = (coincoin.get().coins)[(type % 100) -1];
+        for ( const auto &coin : v ) {
+            if ( coin.owner != eosContract /* not on order */ ) {
+                auto fitr = frozencoins.find(coin.id);
+                if ( needAmount > 0 ) {
+                    --needAmount;
+                    if (fitr != frozencoins.end()) --needAmount;
+                }
+                if ( needAmount <= 0 ) break;
             }
-            if ( needAmount <= 0 ) break;
+        }
+    } else {
+        auto coin = _coins.begin();
+        for ( const auto &id : _players.find(owner.value)->coins ) {
+            coin = _coins.find(id);
+            if ( coin->type == type && coin->owner != eosContract /* not on order */ ) {
+                auto fitr = frozencoins.find(id);
+                if ( needAmount > 0 ) {
+                    --needAmount;
+                    if (fitr != frozencoins.end()) --needAmount;
+                }
+                if ( needAmount <= 0 ) break;
+            }
         }
     }
     eosio_assert(needAmount <= 0, "This coin cant exchange, it is frozen.");
+    coincoin.remove();
 
     const uint64_t &inputtype = type % 100;
     const uint64_t &inputvalue = type / 100;

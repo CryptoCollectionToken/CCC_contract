@@ -1,5 +1,5 @@
 {
-    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Thu Jun 20 01:39:32 2019",
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Thu Jun 20 15:42:10 2019",
     "version": "eosio::abi/1.1",
     "structs": [
         {
@@ -94,24 +94,12 @@
             "fields": []
         },
         {
-            "name": "coin",
+            "name": "coincoin",
             "base": "",
             "fields": [
                 {
-                    "name": "id",
-                    "type": "uint64"
-                },
-                {
-                    "name": "owner",
+                    "name": "n",
                     "type": "name"
-                },
-                {
-                    "name": "type",
-                    "type": "uint64"
-                },
-                {
-                    "name": "number",
-                    "type": "uint64"
                 }
             ]
         },
@@ -436,22 +424,44 @@
             ]
         },
         {
+            "name": "st_coin",
+            "base": "",
+            "fields": [
+                {
+                    "name": "id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "owner",
+                    "type": "name"
+                },
+                {
+                    "name": "type",
+                    "type": "uint64"
+                },
+                {
+                    "name": "number",
+                    "type": "uint64"
+                }
+            ]
+        },
+        {
+            "name": "st_coincoin",
+            "base": "",
+            "fields": [
+                {
+                    "name": "coins",
+                    "type": "v_coin_t[]"
+                }
+            ]
+        },
+        {
             "name": "st_collection",
             "base": "",
             "fields": [
                 {
                     "name": "records",
                     "type": "uint64[]"
-                }
-            ]
-        },
-        {
-            "name": "st_collection_cd",
-            "base": "",
-            "fields": [
-                {
-                    "name": "time_limit",
-                    "type": "uint32[]"
                 }
             ]
         },
@@ -529,6 +539,16 @@
                 {
                     "name": "miner",
                     "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "st_player2",
+            "base": "",
+            "fields": [
+                {
+                    "name": "coins",
+                    "type": "st_coin[]"
                 }
             ]
         },
@@ -627,7 +647,12 @@
             ]
         }
     ],
-    "types": [],
+    "types": [
+        {
+            "new_type_name": "v_coin_t",
+            "type": "st_coin[]"
+        }
+    ],
     "actions": [
         {
             "name": "autobuyback",
@@ -662,6 +687,11 @@
         {
             "name": "clear",
             "type": "clear",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "coincoin",
+            "type": "coincoin",
             "ricardian_contract": ""
         },
         {
@@ -792,14 +822,14 @@
         },
         {
             "name": "coin",
-            "type": "coin",
+            "type": "st_coin",
             "index_type": "i64",
             "key_names": [],
             "key_types": []
         },
         {
-            "name": "collcd",
-            "type": "st_collection_cd",
+            "name": "coincoin",
+            "type": "st_coincoin",
             "index_type": "i64",
             "key_names": [],
             "key_types": []
@@ -849,6 +879,13 @@
         {
             "name": "player",
             "type": "player",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
+        {
+            "name": "player2",
+            "type": "st_player2",
             "index_type": "i64",
             "key_names": [],
             "key_types": []

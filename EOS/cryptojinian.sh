@@ -8,59 +8,61 @@ cleos -u http://api.eosbeijing.one push action chainbankeos test '[]' -p megumim
 cleos -u https://api.eosnewyork.io push action chainbankeos test '[]' -p megumimegumi@active
 cleos -u http://peer1.eoshuobipool.com:8181 push action chainbankeos test '[]' -p megumimegumi@active
 
+cleos -u http://api.eosbeijing.one push action chainbankeos coincoin '["jiangmin1234"]' -p chainbankeos@active
+
 cleos -u http://api.eosbeijing.one push action chainbankeos collclaim '["rukamoemoe51","29"]' -p rukamoemoe51@active
 
 http://peer1.eoshuobipool.com:8181/
 cleos -u http://api.eosbeijing.one push action chainbankeos frozen '["aiyinsitan12","16"]' -p chainbankeos@active
 
-cleos -u https://api-kylin.eosasia.one set contract ccctest22222 cryptojinian -p ccctest22222@active
+cleos -u http://api.eosbeijing.one set contract chainbankeos cryptojinian -p chainbankeos@active
 
 
-cleos --wallet-url http://127.0.0.1:8900 -u https://api-kylin.eosasia.one set contract ccctest22222 /mnt/d/ruka/Documents/github/cryptocoin-contracts/EOS/cryptojinian -p ccctest22222@active
+cleos --wallet-url http://127.0.0.1:8900 -u http://api.eosbeijing.one set contract chainbankeos /mnt/d/ruka/Documents/github/cryptocoin-contracts/EOS/cryptojinian -p chainbankeos@active
 
 https://kylin.eoscanada.com/
-cleos -u https://api-kylin.eosasia.one push action ccctest22222 pushorder '["cccmining555","1.0000 EOS","1 1 3" ]' -p cccmining555@active
-#cleos -u https://api-kylin.eosasia.one get table ccctest22222 ccctest22222 accounts
-#cleos -u https://api-kylin.eosasia.one get table ccctest22222 cccmining555 accounts
-#cleos -u https://api-kylin.eosasia.one get table ccctest22222 ccctest22222 player
-#cleos -u https://api-kylin.eosasia.one get table ccctest22222 ccctest22222 usedcoins
-#cleos -u https://api-kylin.eosasia.one get table ccctest22222 ccctest22222 miningqueue
-#cleos -u https://api-kylin.eosasia.one get table ccctest22222 ccctest22222 dividend
-#cleos -u https://api-kylin.eosasia.one get table ccctest22222 ccctest22222 order
-#cleos -u https://api-kylin.eosasia.one get table ccctest22222 ccctest22222 coin
+cleos -u http://api.eosbeijing.one push action chainbankeos pushorder '["cccmining555","1.0000 EOS","1 1 3" ]' -p cccmining555@active
+#cleos -u http://api.eosbeijing.one get table chainbankeos chainbankeos accounts
+#cleos -u http://api.eosbeijing.one get table chainbankeos cccmining555 accounts
+#cleos -u http://api.eosbeijing.one get table chainbankeos chainbankeos player
+#cleos -u http://api.eosbeijing.one get table chainbankeos chainbankeos usedcoins
+#cleos -u http://api.eosbeijing.one get table chainbankeos chainbankeos miningqueue
+#cleos -u http://api.eosbeijing.one get table chainbankeos chainbankeos dividend
+#cleos -u http://api.eosbeijing.one get table chainbankeos chainbankeos order
+#cleos -u http://api.eosbeijing.one get table chainbankeos chainbankeos coin
 #cleos -u http://api.eosbeijing.one get table chainbankeos chainbankeos frozencoins
 cleos -u http://api.eosbeijing.one get table chainbankeos chainbankeos coin
 cleos -u http://api.eosbeijing.one get table chainbankeos chainbankeos collcd
-
+cleos -u http://api.eosbeijing.one get table chainbankeos chainbankeos player
 
 cleos get table contract contract accounts
-cleos -u https://api-kylin.eosasia.one get table ccctest22222 ccctest22222 player -L lower -U upper cccmining555
-cleos -u https://api-kylin.eosasia.one push action ccctest22222 claim '["cccmining555"]' -p ccctest22222@active
-#cleos -u https://kylin.eoscanada.com/ push action ccctest22222 mining '["0196d5b5d9ec1bc78ba927d2db2cb327d836f002601c77bd8c3f144a07ddc737"]' -p ccctest22222@active
+cleos -u http://api.eosbeijing.one get table chainbankeos chainbankeos player -L lower -U upper cccmining555
+cleos -u http://api.eosbeijing.one push action chainbankeos claim '["cccmining555"]' -p chainbankeos@active
+#cleos -u https://kylin.eoscanada.com/ push action chainbankeos mining '["0196d5b5d9ec1bc78ba927d2db2cb327d836f002601c77bd8c3f144a07ddc737"]' -p chainbankeos@active
 
-cleos -u https://api-kylin.eosasia.one push action ccctest22222 mining '["55ccc226a1875a08c94284c26bf56e712612da2e9c41133bc4baf02df81459e3"]' -p ccctest22222@active
-
-
-cleos -u https://api-kylin.eosasia.one push action ccctest22222 test.1 '["cccmining555"]' -p ccctest22222@active
+cleos -u http://api.eosbeijing.one push action chainbankeos mining '["55ccc226a1875a08c94284c26bf56e712612da2e9c41133bc4baf02df81459e3"]' -p chainbankeos@active
 
 
-#cleos -u https://api-kylin.eosasia.one push action ccctest22222 clin '[]' -p ccctest22222@active
-cleos -u https://api-kylin.eosasia.one set account permission ccctest22222 active '{"threshold": 1,"keys": [{"key":"EOS6Cvzq7Ggroxi1HJfWqH7xM8RbqWcz6Lud5sQbNpD1es2a3GeH1", "weight":1}],"accounts": [{"permission":{"actor":"ccctest22222","permission":"eosio.code"},"weight":1}]}' active -p ccctest22222@active
-cleos -u https://api-kylin.eosasia.one set account permission ccctest22222 active '{"threshold":1, "keys":[{"key":"EOS6Cvzq7Ggroxi1HJfWqH7xM8RbqWcz6Lud5sQbNpD1es2a3GeH1", "weight":1}], "accounts": [{"permission":{"actor":"ccctest22222","permission":"eosio.code"},"weight":1}]}' owner -p ccctest22222
-#cleos -u https://api-kylin.eosasia.one push action ccctest22222 init '[]' -p ccctest22222@active
-#cleos -u https://api-kylin.eosasia.one push action ccctest22222 test '[]' -p ccctest22222@active
+cleos -u http://api.eosbeijing.one push action chainbankeos test.1 '["cccmining555"]' -p chainbankeos@active
 
-#cleos -u https://api-kylin.eosasia.one push action eosio.token transfer '[ "ccctest22222", "ccctest22222", "1.0000 EOS" "mining"]' -p ccctest22222@active
+
+#cleos -u http://api.eosbeijing.one push action chainbankeos clin '[]' -p chainbankeos@active
+cleos -u http://api.eosbeijing.one set account permission chainbankeos active '{"threshold": 1,"keys": [{"key":"EOS6Cvzq7Ggroxi1HJfWqH7xM8RbqWcz6Lud5sQbNpD1es2a3GeH1", "weight":1}],"accounts": [{"permission":{"actor":"chainbankeos","permission":"eosio.code"},"weight":1}]}' active -p chainbankeos@active
+cleos -u http://api.eosbeijing.one set account permission chainbankeos active '{"threshold":1, "keys":[{"key":"EOS6Cvzq7Ggroxi1HJfWqH7xM8RbqWcz6Lud5sQbNpD1es2a3GeH1", "weight":1}], "accounts": [{"permission":{"actor":"chainbankeos","permission":"eosio.code"},"weight":1}]}' owner -p chainbankeos
+#cleos -u http://api.eosbeijing.one push action chainbankeos init '[]' -p chainbankeos@active
+#cleos -u http://api.eosbeijing.one push action chainbankeos test '[]' -p chainbankeos@active
+
+#cleos -u http://api.eosbeijing.one push action eosio.token transfer '[ "chainbankeos", "chainbankeos", "1.0000 EOS" "mining"]' -p chainbankeos@active
 
 
 cleos -u http://api-direct.eosasia.one push action eosio.token transfer '[ "rukamoemoe51","chainbankeos","78.2479 EOS","back"]' -p rukamoemoe51@active
 
-cleos -u https://api-kylin.eosasia.one push action ccctest22222 joinbuybackq '[ "cccmining555","10.0000 CCC"]' -p cccmining555@active
+cleos -u http://api.eosbeijing.one push action chainbankeos joinbuybackq '[ "cccmining555","10.0000 CCC"]' -p cccmining555@active
 
-cleos -u https://api-kylin.eosasia.one push action ccctest22222 ownersetcoin '[ "cccmining555","301","11"]' -p ccctest22222@active
+cleos -u http://api.eosbeijing.one push action chainbankeos ownersetcoin '[ "cccmining555","301","11"]' -p chainbankeos@active
 
 
-cleos -u https://api-kylin.eosasia.one get table ccctest22222 ccctest22222 buybackqueue
+cleos -u http://api.eosbeijing.one get table chainbankeos chainbankeos buybackqueue
 
 cleos -u http://api-direct.eosasia.one get table chainbankeos chainbankeos buybackqueue
 
@@ -128,18 +130,18 @@ cleos -u http://api-direct.eosasia.one push action eosio.token transfer '["rukam
 #cleos -u http://api-direct.eosasia.one get table -l 65536 eosotcbackup eosio.token order
 
 
-# cleos -u https://api-kylin.eosasia.one push action pomelodex111 test '[]' -p minakokojima@active
+# cleos -u http://api.eosbeijing.one push action pomelodex111 test '[]' -p minakokojima@active
 
 
-# cleos -u https://api-kylin.eosasia.one set contract pomelodex111 pomelo -p pomelodex111@active
-# cleos -u https://api-kylin.eosasia.one push action eosio.token transfer '[ "minakokojima", "pomelodex111", "1.0000 EOS", "buy,happyeosslot,HPY,2.0000" ]' -p minakokojima@active
-# cleos -u https://api-kylin.eosasia.one set contract pomelodex111 pomelo -p pomelodex111@active
-# cleos -u https://api-kylin.eosasia.one push action eosio.token transfer '[ "minakokojima", "happyeosslot", "1.0000 EOS", "buy" ]' -p minakokojima@active
+# cleos -u http://api.eosbeijing.one set contract pomelodex111 pomelo -p pomelodex111@active
+# cleos -u http://api.eosbeijing.one push action eosio.token transfer '[ "minakokojima", "pomelodex111", "1.0000 EOS", "buy,happyeosslot,HPY,2.0000" ]' -p minakokojima@active
+# cleos -u http://api.eosbeijing.one set contract pomelodex111 pomelo -p pomelodex111@active
+# cleos -u http://api.eosbeijing.one push action eosio.token transfer '[ "minakokojima", "happyeosslot", "1.0000 EOS", "buy" ]' -p minakokojima@active
 
-# cleos -u https://api-kylin.eosasia.one push action eosio.token transfer '[ "minakokojima", "pomelodex111", "1.0000 EOS", "buy,happyeosslot,HPY,2.0000" ]' -p minakokojima@active
+# cleos -u http://api.eosbeijing.one push action eosio.token transfer '[ "minakokojima", "pomelodex111", "1.0000 EOS", "buy,happyeosslot,HPY,2.0000" ]' -p minakokojima@active
 # /usr/local/eosio/bin/eosiocpp -g pomelo/pomelo.abi pomelo/pomelo.cpp
-# cleos -u https://api-kylin.eosasia.one set contract pomelodex111 pomelo -p pomelodex111@active
-# cleos -u https://api-kylin.eosasia.one system newaccount --stake-net '5.0000 EOS' --stake-cpu '1.0000 EOS' --buy-ram '20.0000 EOS' minakokojima pomelodex111 EOS5fY2dmpfXmzXN1DEJ6VfvhhCr55ZpE9MyTd9eX7Cw2EmzJcnFM EOS781pFN6TgUkuCDqmCdyxcp1cnJdtg3DYfajbAba6mvHvrFNuDy
+# cleos -u http://api.eosbeijing.one set contract pomelodex111 pomelo -p pomelodex111@active
+# cleos -u http://api.eosbeijing.one system newaccount --stake-net '5.0000 EOS' --stake-cpu '1.0000 EOS' --buy-ram '20.0000 EOS' minakokojima pomelodex111 EOS5fY2dmpfXmzXN1DEJ6VfvhhCr55ZpE9MyTd9eX7Cw2EmzJcnFM EOS781pFN6TgUkuCDqmCdyxcp1cnJdtg3DYfajbAba6mvHvrFNuDy
 
 
 
@@ -182,16 +184,16 @@ cleos -u http://api-direct.eosasia.one push action eosio.token transfer '["rukam
 
 #cleos -u http://api-direct.eosasia.one get table cryptomeetup cryptomeetup buyorder
 
-# cleos -u https://api-kylin.eosasia.one push action pomelodex111 test '[]' -p minakokojima@active
+# cleos -u http://api.eosbeijing.one push action pomelodex111 test '[]' -p minakokojima@active
 
 
-# cleos -u https://api-kylin.eosasia.one set contract pomelodex111 pomelo -p pomelodex111@active
-# cleos -u https://api-kylin.eosasia.one push action eosio.token transfer '[ "minakokojima", "pomelodex111", "1.0000 EOS", "buy,happyeosslot,HPY,2.0000" ]' -p minakokojima@active
-# cleos -u https://api-kylin.eosasia.one set contract pomelodex111 pomelo -p pomelodex111@active
-# cleos -u https://api-kylin.eosasia.one push action eosio.token transfer '[ "minakokojima", "happyeosslot", "1.0000 EOS", "buy" ]' -p minakokojima@active
+# cleos -u http://api.eosbeijing.one set contract pomelodex111 pomelo -p pomelodex111@active
+# cleos -u http://api.eosbeijing.one push action eosio.token transfer '[ "minakokojima", "pomelodex111", "1.0000 EOS", "buy,happyeosslot,HPY,2.0000" ]' -p minakokojima@active
+# cleos -u http://api.eosbeijing.one set contract pomelodex111 pomelo -p pomelodex111@active
+# cleos -u http://api.eosbeijing.one push action eosio.token transfer '[ "minakokojima", "happyeosslot", "1.0000 EOS", "buy" ]' -p minakokojima@active
 
-# cleos -u https://api-kylin.eosasia.one push action eosio.token transfer '[ "minakokojima", "pomelodex111", "1.0000 EOS", "buy,happyeosslot,HPY,2.0000" ]' -p minakokojima@active
-# cleos -u https://api-kylin.eosasia.one set contract pomelodex111 pomelo -p pomelodex111@active
-# cleos -u https://api-kylin.eosasia.one system newaccount --stake-net '5.0000 EOS' --stake-cpu '1.0000 EOS' --buy-ram '20.0000 EOS' minakokojima pomelodex111 EOS5fY2dmpfXmzXN1DEJ6VfvhhCr55ZpE9MyTd9eX7Cw2EmzJcnFM EOS781pFN6TgUkuCDqmCdyxcp1cnJdtg3DYfajbAba6mvHvrFNuDy
+# cleos -u http://api.eosbeijing.one push action eosio.token transfer '[ "minakokojima", "pomelodex111", "1.0000 EOS", "buy,happyeosslot,HPY,2.0000" ]' -p minakokojima@active
+# cleos -u http://api.eosbeijing.one set contract pomelodex111 pomelo -p pomelodex111@active
+# cleos -u http://api.eosbeijing.one system newaccount --stake-net '5.0000 EOS' --stake-cpu '1.0000 EOS' --buy-ram '20.0000 EOS' minakokojima pomelodex111 EOS5fY2dmpfXmzXN1DEJ6VfvhhCr55ZpE9MyTd9eX7Cw2EmzJcnFM EOS781pFN6TgUkuCDqmCdyxcp1cnJdtg3DYfajbAba6mvHvrFNuDy
 
 #cleos wallet import -n www --private-key 
