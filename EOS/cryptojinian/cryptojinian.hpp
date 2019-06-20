@@ -711,88 +711,38 @@ class [[eosio::contract]] cryptojinian : public eosio::contract {
         // Dev
         // Test
         ACTION test() {
-            //require_auth(_self);
             require_auth("megumimegumi"_n);
             /* ===== */
             // input ids.
             vector<uint64_t> inputs;
-            inputs.push_back(12451);
-            inputs.push_back(14330);
-            inputs.push_back(15247);
+            const uint64_t inputid = 14281;
+            const uint64_t goal = 1;
             /* ===== */
-                    
-            // 檢查 input 的 coin 是不是同 type
-            const uint64_t coincount = inputs.size();
-            name owner;
-            uint64_t type = 0;
-            vector<decltype(_coins.begin())> itrsOfInputCoins;
-            for( int i = 0 ; i < inputs.size() ; ++i){
-                auto &&c = _coins.find(inputs[i]);
-                // require_auth(name(c->owner));
-                if (type == 0) {
-                    owner = name(c->owner);
-                    type = c->type;
-                } else eosio_assert(c->type == type, "Not Equal Type");
-
-                itrsOfInputCoins.emplace_back(c);
-            }
-
-
-            // 凍結檢驗
-            collection_t collection(_self, owner.value);
-            const auto &coll = collection.get_or_create(_self, st_collection { .records = vector<uint64_t> (22 + 6 + 1,0) } );
-
-            uint64_t amountOfFrozenCoin = 0;
-            const auto &v = toCollTypes(type);
-            for (const auto &t : v) { // collTypes
-                amountOfFrozenCoin += coll.records[t];
-            }
-            int64_t needAmount = amountOfFrozenCoin + coincount;
-
-            singleton_coincoin_t coincoin(_self, owner.value);
-            frozencoins_t frozencoins(_self, owner.value);
-            const auto eosContract = EOS_CONTRACT.value;
-            if (coincoin.exists()) {
-                auto &&v = (coincoin.get().coins)[(type % 100) -1];
-                for ( const auto &coin : v ) {
-                    if ( coin.owner != eosContract /* not on order */ ) {
-                        auto fitr = frozencoins.find(coin.id);
-                        if ( needAmount > 0 ) {
-                            --needAmount;
-                            if (fitr != frozencoins.end()) --needAmount;
+    
+            const auto &onecoin = _coins.find(inputid);
+            // require_auth(name(onecoin->owner));
+            const uint64_t &goaltype = goal % 100;
+            const uint64_t &goalvalue = goal / 100;
+            const uint64_t &inputtype = onecoin->type % 100;
+            const uint64_t &inputvalue = onecoin->type / 100;
+            eosio_assert(inputtype == goaltype, "Not Equal Type");  
+            eosio_assert(goalvalue < inputvalue, "Goal Is Gearter Than Input");
+            const uint64_t &amount = _coinvalues[inputtype-1][inputvalue] / _coinvalues[goaltype-1][goalvalue];
+            eosio_assert(_coinvalues[inputtype-1][inputvalue]%_coinvalues[goaltype-1][goalvalue] == 0, "Cant't exactly divided.");
+            for(int i1 = 0; i1 < amount; i1++){
+                if(goalvalue == 0) {
+                    auto itr = _coins.begin(); 
+                    while(itr != _coins.end()){
+                        if(itr->owner == _self.value && itr->type == goal) {
+                            exchangecoin(name(onecoin->owner), itr->id);
+                            break;
                         }
-                        if ( needAmount <= 0 ) break;
+                        ++itr;
                     }
-                }
-            } else {
-                auto coin = _coins.begin();
-                for ( const auto &id : _players.find(owner.value)->coins ) {
-                    coin = _coins.find(id);
-                    if ( coin->type == type && coin->owner != eosContract /* not on order */ ) {
-                        auto fitr = frozencoins.find(id);
-                        if ( needAmount > 0 ) {
-                            --needAmount;
-                            if (fitr != frozencoins.end()) --needAmount;
-                        }
-                        if ( needAmount <= 0 ) break;
-                    }
-                }
+                } else setcoin(name(onecoin->owner), goal, addcoincount(goal));
             }
-            eosio_assert(needAmount <= 0, "This coin cant exchange, it is frozen.");
-            coincoin.remove();
+            deletecoin(inputid);
 
-            const uint64_t &inputtype = type % 100;
-            const uint64_t &inputvalue = type / 100;
-            const uint64_t &indexOfType = inputtype - 1;
-            const uint64_t &coinvalue = _coinvalues[indexOfType][inputvalue];
-            for(int i1=0 ; i1 < _coinvalues[indexOfType].size() ; i1++){
-                if ((coincount * coinvalue == _coinvalues[indexOfType][i1]) && (i1 > inputvalue)){
-                    for(auto &i2 : inputs) { deletecoin(i2); }
-                    uint64_t &&newcointype = (i1 * 100) + inputtype;
-                    setcoin(name(owner), newcointype, addcoincount(newcointype));
-                }
-            }
-                    
             /* ===== */
             eosio_assert(false, "testX");
         }

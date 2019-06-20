@@ -219,8 +219,7 @@ void cryptojinian::exchange(const string &inputstrs){
 }
 
 void cryptojinian::exchangedown(const uint64_t inputid, const uint64_t goal){
-    // eosio_assert(cd_check(inputid), "This coin cant exchange, it is frozen.");
-    auto onecoin = _coins.find(inputid);
+    const auto &onecoin = _coins.find(inputid);
     require_auth(name(onecoin->owner));
     const uint64_t &goaltype = goal % 100;
     const uint64_t &goalvalue = goal / 100;
@@ -232,13 +231,13 @@ void cryptojinian::exchangedown(const uint64_t inputid, const uint64_t goal){
     eosio_assert(_coinvalues[inputtype-1][inputvalue]%_coinvalues[goaltype-1][goalvalue] == 0, "Cant't exactly divided.");
     for(int i1 = 0; i1 < amount; i1++){
         if(goalvalue == 0){
-            for(int i2 = 0; i2 < _coins.available_primary_key(); i2++){
-                auto itr = _coins.find(i2);
-                if(itr == _coins.end()) continue;
-                if(itr->owner != _self.value) continue;
-                if(itr->type != goal) continue;
-                exchangecoin(name(onecoin->owner), i2);
-                break;
+            auto itr = _coins.begin();
+            while(itr != _coins.end()){
+                if(itr->owner == _self.value && itr->type == goal) {
+                    exchangecoin(name(onecoin->owner), itr->id);
+                    break;
+                }
+                ++itr;
             }
         } else setcoin(name(onecoin->owner), goal, addcoincount(goal));
     }
