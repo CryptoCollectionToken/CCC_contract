@@ -21,4 +21,8 @@ yarn-error.log*
 *.sw*
 yarn.lock
 
+#abi and wasm
+*.abi
+*.wasm
+
 \.vs/
